@@ -44,5 +44,8 @@ def parse_cfg(cfg_path: str) -> OmegaConf:
 	base.task_title = base.task.replace('-', ' ').title()
 	base.device = 'cuda' if base.modality == 'state' else 'cpu'
 	base.exp_name = str(base.get('exp_name', 'default'))
-
+	
+	base.task = 'dog-run'
+	base.save_model = True
+	base.save_video = True
 	return base

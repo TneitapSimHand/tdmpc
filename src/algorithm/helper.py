@@ -230,26 +230,26 @@ class ReplayBuffer():
 		self._full = self._full or self.idx == 0
 
 	def update_priorities(self, idxs, priorities):
-		self._priorities[idxs] = priorities.squeeze(1).to(self.device) + self._eps
+		self._priorities[idxs.long()] = priorities.squeeze(1).to(self.device) + self._eps
 
 	def _get_obs(self, arr, idxs):
 		if self.cfg.modality == 'state':
-			return arr[idxs]
+			return arr[idxs.long()]
 		obs = torch.empty((self.cfg.batch_size, 3*self.cfg.frame_stack, *arr.shape[-2:]), dtype=arr.dtype, device=torch.device('cuda'))
-		obs[:, -3:] = arr[idxs].cuda()
+		obs[:, -3:] = arr[idxs.long()].cuda()
 		_idxs = idxs.clone()
 		mask = torch.ones_like(_idxs, dtype=torch.bool)
 		for i in range(1, self.cfg.frame_stack):
 			mask[_idxs % self.cfg.episode_length == 0] = False
 			_idxs[mask] -= 1
-			obs[:, -(i+1)*3:-i*3] = arr[_idxs].cuda()
+			obs[:, -(i+1)*3:-i*3] = arr[_idxs.long()].cuda()
 		return obs.float()
 
 	def sample(self):
 		probs = (self._priorities if self._full else self._priorities[:self.idx]) ** self.cfg.per_alpha
 		probs /= probs.sum()
 		total = len(probs)
-		idxs = torch.from_numpy(np.random.choice(total, self.cfg.batch_size, p=probs.cpu().numpy(), replace=not self._full)).to(self.device)
+		idxs = torch.from_numpy(np.random.choice(total, self.cfg.batch_size, p=probs.cpu().numpy(), replace=not self._full)).long().to(self.device)
 		weights = (total * probs[idxs]) ** (-self.cfg.per_beta)
 		weights /= weights.max()
 

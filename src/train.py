@@ -2,7 +2,7 @@ import warnings
 warnings.filterwarnings('ignore')
 import os
 os.environ['MKL_SERVICE_FORCE_INTEL'] = '1'
-os.environ['MUJOCO_GL'] = 'egl'
+# os.environ['MUJOCO_GL'] = 'egl' # comment on windows, according to https://github.com/mkocabas/VIBE/issues/101
 import torch
 import numpy as np
 import gym
